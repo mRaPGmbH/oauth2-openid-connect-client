@@ -6,6 +6,7 @@
 namespace OpenIDConnectClient\Validator;
 
 use Lcobucci\JWT\Token;
+use Lcobucci\JWT\Token\Plain;
 
 class ValidatorChain
 {
@@ -51,19 +52,20 @@ class ValidatorChain
      * @param Token $token
      * @return bool
      */
-    public function validate(array $data, Token $token)
+
+    public function validate(array $data, Plain $token)
     {
         $valid = true;
         foreach ($this->validators as $claim => $validator) {
-            if ($validator->isRequired() && false === $token->hasClaim($claim)) {
+            if ($validator->isRequired() && false === $token->claims()->has($claim)) {
                 $valid = false;
                 $this->messages[$claim] = sprintf("Missing required value for claim %s", $claim);
                 continue;
-            } else if (empty($data[$claim]) || false === $token->hasClaim($claim)) {
+            } else if (empty($data[$claim]) || false === $token->claims()->has($claim)) {
                 continue;
             }
 
-            if (!$validator->isValid($data[$claim], $token->getClaim($claim))) {
+            if (!$validator->isValid($data[$claim], $token->claims()->get($claim))) {
                 $valid = false;
                 $this->messages[$claim] = $validator->getMessage();
             }

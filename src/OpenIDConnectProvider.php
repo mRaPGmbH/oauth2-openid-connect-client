@@ -5,6 +5,7 @@
  */
 namespace OpenIDConnectClient;
 
+use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer;
 use Lcobucci\JWT\Signer\Key;
 use Lcobucci\JWT\Token;
@@ -73,7 +74,7 @@ class OpenIDConnectProvider extends GenericProvider
         }
 
         if(!in_array('openid', $options['scopes'])) {
-            array_push($options['scopes'], 'openid');
+            $options['scopes'][] = 'openid';
         }
 
         parent::__construct($options, $collaborators);
@@ -95,7 +96,7 @@ class OpenIDConnectProvider extends GenericProvider
 
     public function getPublicKey()
     {
-        return new Key($this->publicKey);
+        return Key\InMemory::file($this->publicKey);
     }
 
     /**
@@ -103,11 +104,12 @@ class OpenIDConnectProvider extends GenericProvider
      *
      * @param  mixed $grant
      * @param  array $options
-     * @return AccessToken
+     *
+     * @return \League\OAuth2\Client\Token\AccessToken|\League\OAuth2\Client\Token\AccessTokenInterface|AccessToken
      */
     public function getAccessToken($grant, array $options = [])
     {
-        /** @var Token $token */
+        /** @var Token\Plain $token */
         $accessToken = parent::getAccessToken($grant, $options);
         $token       = $accessToken->getIdToken();
 
@@ -124,7 +126,9 @@ class OpenIDConnectProvider extends GenericProvider
         //
         // The alg value SHOULD be the default of RS256 or the algorithm sent by the Client in the
         // id_token_signed_response_alg parameter during Registration.
-        if (false === $token->verify($this->signer, $this->getPublicKey())) {
+
+        // TODO ???
+        if (false === Configuration::forSymmetricSigner($this->signer, $this->getPublicKey())->validator()->validate($token)) {
             throw new InvalidTokenException('Received an invalid id_token from authorization server.');
         }
 
@@ -150,7 +154,7 @@ class OpenIDConnectProvider extends GenericProvider
         // If the acr Claim was requested, the Client SHOULD check that the asserted Claim Value is appropriate.
         // The meaning and processing of acr Claim Values is out of scope for this specification.
         $currentTime = time();
-        $nbfToleranceSeconds = isset($options['nbfToleranceSeconds'])? intval($options['nbfToleranceSeconds']) : 0;
+        $nbfToleranceSeconds = isset($options['nbfToleranceSeconds'])? (int)$options['nbfToleranceSeconds'] : 0;
         $data = [
             'iss'       => $this->getIdTokenIssuer(),
             'exp'       => $currentTime,
@@ -162,7 +166,7 @@ class OpenIDConnectProvider extends GenericProvider
 
         // If the ID Token contains multiple audiences, the Client SHOULD verify that an azp Claim is present.
         // If an azp (authorized party) Claim is present, the Client SHOULD verify that its client_id is the Claim Value.
-        if ($token->hasClaim('azp')) {
+        if ($token->claims()->has('azp')) {
             $data['azp'] = $this->clientId;
         }
 
