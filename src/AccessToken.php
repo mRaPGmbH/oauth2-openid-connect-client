@@ -16,7 +16,6 @@ class AccessToken extends \League\OAuth2\Client\Token\AccessToken
         parent::__construct($options);
 
         if (!empty($this->values['id_token'])) {
-            // TODO this correct? -> not recommended in docs
             $this->idToken = Configuration::forUnsecuredSigner()->parser()->parse($this->values['id_token']);
             unset($this->values['id_token']);
         }

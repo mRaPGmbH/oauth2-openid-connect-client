@@ -5,10 +5,12 @@
  */
 namespace OpenIDConnectClient;
 
+use DateTimeImmutable;
 use Lcobucci\JWT\Configuration;
 use Lcobucci\JWT\Signer;
 use Lcobucci\JWT\Signer\Key;
 use Lcobucci\JWT\Token;
+use Lcobucci\JWT\Validation\Constraint;
 use League\OAuth2\Client\Provider\GenericProvider;
 use InvalidArgumentException;
 use OpenIDConnectClient\Exception\InvalidTokenException;
@@ -127,8 +129,10 @@ class OpenIDConnectProvider extends GenericProvider
         // The alg value SHOULD be the default of RS256 or the algorithm sent by the Client in the
         // id_token_signed_response_alg parameter during Registration.
 
-        // TODO ???
-        if (false === Configuration::forSymmetricSigner($this->signer, $this->getPublicKey())->validator()->validate($token)) {
+        $config = Configuration::forSymmetricSigner($this->signer, $this->getPublicKey());
+        $config->setValidationConstraints(new Constraint\SignedWith($this->signer, $this->getPublicKey()));
+
+        if (false === $config->validator()->validate($token, ...$config->validationConstraints())) {
             throw new InvalidTokenException('Received an invalid id_token from authorization server.');
         }
 
@@ -157,10 +161,10 @@ class OpenIDConnectProvider extends GenericProvider
         $nbfToleranceSeconds = isset($options['nbfToleranceSeconds'])? (int)$options['nbfToleranceSeconds'] : 0;
         $data = [
             'iss'       => $this->getIdTokenIssuer(),
-            'exp'       => $currentTime,
+            'exp'       => DateTimeImmutable::createFromFormat('U.u', $currentTime),
             'auth_time' => $currentTime,
-            'iat'       => $currentTime,
-            'nbf'       => $currentTime + $nbfToleranceSeconds,
+            'iat'       => DateTimeImmutable::createFromFormat('U.u', $currentTime),
+            'nbf'       => DateTimeImmutable::createFromFormat('U.u', $currentTime + $nbfToleranceSeconds),
             'aud'       => $this->clientId
         ];
 

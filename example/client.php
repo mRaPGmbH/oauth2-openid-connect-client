@@ -7,12 +7,12 @@ $signer   = new \Lcobucci\JWT\Signer\Rsa\Sha256();
 $provider = new \OpenIDConnectClient\OpenIDConnectProvider([
     'clientId'                => 'demoapp',
     'clientSecret'            => 'demopass',
-    'idTokenIssuer'           => 'brentertainment.com',
+    'idTokenIssuer'           => 'localhost:8080',
     // Your server
-    'redirectUri'             => 'http://localhost:8082/',
-    'urlAuthorize'            => 'http://brentertainment.com/oauth2/lockdin/authorize',
-    'urlAccessToken'          => 'http://brentertainment.com/oauth2/lockdin/token',
-    'urlResourceOwnerDetails' => 'http://brentertainment.com/oauth2/lockdin/resource',
+    'redirectUri'             => 'http://localhost:8081/',
+    'urlAuthorize'            => 'http://localhost:8080/lockdin/authorize',
+    'urlAccessToken'          => 'http://localhost:8080/lockdin/token',
+    'urlResourceOwnerDetails' => 'http://localhost:8080/lockdin/resource',
     // Find the public key here: https://github.com/bshaffer/oauth2-demo-php/blob/master/data/pubkey.pem
     // to test against brentertainment.com
     'publicKey'                 => $key,
@@ -51,7 +51,7 @@ $response = [
     "Refresh Token: ". $token->getRefreshToken(),
     "Expires: ". $token->getExpires(),
     "Has Expired: ". $token->hasExpired(),
-    "All Claims: ". print_r($token->getIdToken()->getClaims(), true)
+    "All Claims: ". print_r($token->getIdToken()->claims(), true)
 ];
 
 echo join("<br />", $response);
