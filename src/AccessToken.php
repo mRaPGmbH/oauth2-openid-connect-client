@@ -30,7 +30,7 @@ class AccessToken extends \League\OAuth2\Client\Token\AccessToken
     {
         $parameters = parent::jsonSerialize();
         if ($this->idToken) {
-            $parameters['id_token'] = (string)$this->idToken;
+            $parameters['id_token'] = $this->idToken->toString();
         }
 
         return $parameters;
