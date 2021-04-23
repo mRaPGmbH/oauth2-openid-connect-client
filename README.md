@@ -1,3 +1,5 @@
+Clone of https://github.com/steverhoades/oauth2-openid-connect-client
+
 # OAuth 2.0 OpenID Connect Client
 
 This package uses the PHP League's [OAuth2 Client](https://github.com/thephpleague/oauth2-client) and this [JWT Token Library](https://github.com/lcobucci/jwt) to provide an OAuth2 OpenID Connect client.
@@ -6,9 +8,8 @@ This package uses the PHP League's [OAuth2 Client](https://github.com/thephpleag
 
 The following versions of PHP are supported.
 
-* PHP 5.5
-* PHP 5.6
 * PHP 7.0
+* PHP 8.0
 
 ## Usage
 You may test your OpenID Connect Client against [bshaffer's demo oauth2 server](https://github.com/bshaffer/oauth2-demo-php).
